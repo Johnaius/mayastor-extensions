@@ -840,3 +840,81 @@ localpv-provisioner:
     enabled: false
   analytics:
     enabled: true
+
+cert-manager:
+  installCRDs: false
+  image:
+    # Controller image repository.
+    repository: quay.io/jetstack/cert-manager-controller
+    tag: 1.12.13
+  webhook:
+    image:
+      # Webhook image repository.
+      repository: quay.io/jetstack/cert-manager-webhook
+      tag: 1.12.13
+    affinity:
+      nodeAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          preference:
+            matchExpressions:
+            - key: kubernetes.azure.com/mode
+              operator: In
+              values:
+              - system
+        - weight: 90
+          preference:
+            matchExpressions:
+            - key: openebs.io/engine=mayastor
+              operator: In
+              values:
+              - acstor
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: kubernetes.io/arch
+              operator: In
+              values:
+              - amd64
+            - key: kubernetes.io/os
+              operator: In
+              values:
+              - linux
+    tolerations:
+    - effect: NoSchedule
+      key: CriticalAddonsOnly
+      operator: Equal
+      value: "true"
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        preference:
+          matchExpressions:
+          - key: kubernetes.azure.com/mode
+            operator: In
+            values:
+            - system
+      - weight: 90
+        preference:
+          matchExpressions:
+          - key: openebs.io/engine=mayastor
+            operator: In
+            values:
+            - acstor
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: kubernetes.io/arch
+            operator: In
+            values:
+            - amd64
+          - key: kubernetes.io/os
+            operator: In
+            values:
+            - linux
+  tolerations:
+  - effect: NoSchedule
+    key: CriticalAddonsOnly
+    operator: Equal
+    value: "true"
