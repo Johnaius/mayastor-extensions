@@ -6,19 +6,19 @@ APP_NAME="api-rest"
 CERT_SECRET_NAME="api-rest-tls"
 CERT_DIR="$(dirname "$0")/certs"
 
-rm -rf certs/
-mkdir -p certs/
+rm -rf "${CERT_DIR}"
+mkdir -p "${CERT_DIR}"
 
 # Create a self-signed root CA
 echo "Creating a self-signed root CA"
 openssl genrsa -out "${CERT_DIR}/ca.key" 4096
-openssl req -x509 -new -nodes -key "${CERT_DIR}/ca.key" -sha256 -days 3650 -out "${CERT_DIR}/ca.crt" -subj "/CN=api-rest-ca"
+openssl req -x509 -new -nodes -key "${CERT_DIR}/ca.key" -sha256 -days 3650 -out "${CERT_DIR}/ca.crt" -subj "/CN=api-rest-ca" -addext "subjectAltName=DNS:${NAMESPACE}-${APP_NAME}-${NAMESPACE}.svc.cluster.local,DNS:${NAMESPACE}-${APP_NAME},DNS:${NAMESPACE}-${APP_NAME}-${NAMESPACE}.svc"
 
 # Create TLS certificate for the API REST
 echo "Creating a TLS certificate for the API REST"
 openssl genrsa -out "${CERT_DIR}/server.key" 4096
-openssl req -new -key "${CERT_DIR}/server.key" -out "${CERT_DIR}/server.csr" -subj "/CN=${APP_NAME}.${NAMESPACE}.svc.cluster.local"
-openssl x509 -req -in "${CERT_DIR}/server.csr" -CA "${CERT_DIR}/ca.crt" -CAkey "${CERT_DIR}/ca.key" -CAcreateserial -out "${CERT_DIR}/server.crt" -days 3650 -sha256
+openssl req -new -key "${CERT_DIR}/server.key" -out "${CERT_DIR}/server.csr" -subj "/CN=${NAMESPACE}-${APP_NAME}" -addext "subjectAltName=DNS:${NAMESPACE}-${APP_NAME}-${NAMESPACE}.svc.cluster.local,DNS:${NAMESPACE}-${APP_NAME},DNS:${NAMESPACE}-${APP_NAME}-${NAMESPACE}.svc"
+openssl x509 -req -in "${CERT_DIR}/server.csr" -CA "${CERT_DIR}/ca.crt" -CAkey "${CERT_DIR}/ca.key" -CAcreateserial -out "${CERT_DIR}/server.crt" -days 3650 -sha256 -extfile <(printf "subjectAltName=DNS:${NAMESPACE}-${APP_NAME}-${NAMESPACE}.svc.cluster.local,DNS:${NAMESPACE}-${APP_NAME},DNS:${NAMESPACE}-${APP_NAME}-${NAMESPACE}.svc")
 
 # Convert the private key to PKCS#1 format if necessary
 echo "Verifying the RSA key format"
