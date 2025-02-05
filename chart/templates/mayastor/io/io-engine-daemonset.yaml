@@ -112,6 +112,11 @@ spec:
         - "--reactor-freeze-detection"{{ end }}
         - "--tgt-crdt={{ .Values.io_engine.target.nvmf.hostCmdRetryDelay.crdt1 }}"{{ if .Values.eventing.enabled }}
         - "--events-url=nats://{{ .Release.Name }}-nats:4222"{{ end }}
+        {{- if .Values.base.tls.enabled }}
+        - "--tls-server-key-path=/etc/server_cert/tls.key"
+        - "--tls-server-cert-path=/etc/server_cert/tls.crt"
+        - "--tls-client-ca-path=/etc/server_cert/ca.crt"
+        {{- end }}
         command:
         - io-engine
         securityContext:
@@ -127,6 +132,11 @@ spec:
           mountPath: /var/local/{{ .Release.Name }}/io-engine/
         - name: hugepage
           mountPath: /dev/hugepages
+        {{- if .Values.base.tls.enabled }}
+        - name: io-engine-server-cert
+          mountPath: "/etc/server_cert/"
+          readOnly: true
+        {{- end }}
         resources:
           limits:
             cpu: {{ .Values.io_engine.resources.limits.cpu | default (include "coreCount" .) | quote }}
@@ -160,3 +170,8 @@ spec:
         hostPath:
           path: /var/local/{{ .Release.Name }}/io-engine/
           type: DirectoryOrCreate
+      {{- if .Values.base.tls.enabled }}
+      - name: io-engine-server-cert
+        secret:
+          secretName: io-engine-server-cert
+      {{- end }}

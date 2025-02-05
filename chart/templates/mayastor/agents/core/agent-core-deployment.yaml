@@ -69,6 +69,11 @@ spec:
             - "--max-rebuilds={{ .Values.agents.core.rebuild.maxConcurrent }}"{{ end }}
             {{- if eq ((.Values.agents.core.rebuild).partial).enabled false }}
             - "--disable-partial-rebuild"{{ end }}
+            {{- if .Values.base.tls.enabled }}
+            - "--tls-server-cert-path=/etc/server_cert/tls.crt"
+            - "--tls-server-key-path=/etc/server_cert/tls.key"
+            - "--tls-client-ca-path=/etc/server_cert/ca.crt"
+            {{- end }}
           ports:
             - containerPort: 50051
           env:
@@ -86,6 +91,12 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
+          {{- if .Values.base.tls.enabled }}
+          volumeMounts:
+            - name: agent-core-server-cert
+              mountPath: /etc/server_cert/
+              readOnly: true
+          {{- end }}
         - name: agent-ha-cluster
           resources:
             limits:
@@ -121,3 +132,9 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
+      {{- if .Values.base.tls.enabled }}
+      volumes:
+        - name: agent-core-server-cert
+          secret:
+            secretName: agent-core-server-cert
+        {{- end }}
