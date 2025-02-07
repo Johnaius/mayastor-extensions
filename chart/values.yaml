@@ -90,9 +90,14 @@ base:
     containers:
       - name: etcd-probe
         command: ['sh', '-c', 'trap "exit 1" TERM; until nc -vzw 5 {{ .Release.Name }}-etcd {{.Values.etcd.service.port}}; do date; echo "Waiting for etcd..."; sleep 1; done;']
-  # tls_enabled to enable TLS for gRPC, REST communications
+
   tls:
     enabled: false
+
+  cert-manager:
+    # -- Enable cert-manager only if tls is enabled
+    enabled: false
+    namespace: openebs
 
   metrics:
     # -- Enable the metrics exporter
