@@ -55,7 +55,7 @@ spec:
             {{- if .Values.apis.rest.healthProbes.readiness.enabled }}
             - "--core-health-freq={{ .Values.apis.rest.healthProbes.readiness.agentCoreProbeFreq }}"
             {{- end }}
-          {{- if not .Values.base.tls.enabled }}
+          {{- if not .Values.tls.enabled }}
             - "--dummy-certificates"
           {{- else }}
             - --cert-file=/etc/tls/tls.crt
@@ -101,7 +101,7 @@ spec:
             periodSeconds: {{ .Values.apis.rest.healthProbes.liveness.periodSeconds }}
             timeoutSeconds: {{ .Values.apis.rest.healthProbes.liveness.timeoutSeconds }}
           {{- end }}
-      {{- if .Values.base.tls.enabled }}
+      {{- if .Values.tls.enabled }}
       volumes:
         - name: certs
           secret:

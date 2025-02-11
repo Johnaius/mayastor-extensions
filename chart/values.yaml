@@ -91,14 +91,6 @@ base:
       - name: etcd-probe
         command: ['sh', '-c', 'trap "exit 1" TERM; until nc -vzw 5 {{ .Release.Name }}-etcd {{.Values.etcd.service.port}}; do date; echo "Waiting for etcd..."; sleep 1; done;']
 
-  tls:
-    enabled: false
-
-  cert-manager:
-    # -- Enable cert-manager only if tls is enabled
-    enabled: false
-    namespace: openebs
-
   metrics:
     # -- Enable the metrics exporter
     enabled: true
@@ -848,3 +840,12 @@ localpv-provisioner:
     enabled: false
   analytics:
     enabled: true
+
+certManager:
+  enabled: true
+  # -- Enable cert-manager only if tls is enabled
+  installCRDs: true
+  namespace: openebs
+
+tls:
+  enabled: true

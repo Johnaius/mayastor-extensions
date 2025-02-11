@@ -49,7 +49,7 @@ dependencies:
     repository: https://openebs.github.io/dynamic-localpv-provisioner
     condition: localpv-provisioner.enabled
   - name: cert-manager
-    version: v1.17.0
+    version: v1.12.10
     repository: https://charts.jetstack.io
     alias: cert-manager
-    condition: base.cert-manager.enabled
+    condition: certManager.enabled
