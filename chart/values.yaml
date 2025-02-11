@@ -4,7 +4,7 @@ crds:
   csi:
     volumeSnapshots:
       # -- Install Volume Snapshot CRDs
-      enabled: true
+      enabled: false
 
 image:
   # -- Image registry to pull our product images
