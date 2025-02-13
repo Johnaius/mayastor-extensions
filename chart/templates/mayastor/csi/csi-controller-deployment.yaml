@@ -131,7 +131,6 @@ spec:
             {{- else }}
             - "--rest-endpoint=http://{{ .Release.Name }}-api-rest:8081"
             {{- end }}
-
           env:
             - name: RUST_LOG
               value: {{ .Values.csi.controller.logLevel }}

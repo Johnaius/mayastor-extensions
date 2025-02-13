@@ -56,6 +56,7 @@ This removes all the Kubernetes components associated with the chart and deletes
 |------------|------|---------|
 |  | crds | 0.0.0 |
 | https://charts.bitnami.com/bitnami | etcd | 8.6.0 |
+| https://charts.jetstack.io | cert-manager(cert-manager) | v1.17.0 |
 | https://grafana.github.io/helm-charts | loki-stack | 2.9.11 |
 | https://jaegertracing.github.io/helm-charts | jaeger-operator | 2.50.1 |
 | https://nats-io.github.io/k8s/helm/charts/ | nats | 0.19.14 |
@@ -114,6 +115,7 @@ This removes all the Kubernetes components associated with the chart and deletes
 | apis.&ZeroWidthSpace;rest.&ZeroWidthSpace;service.&ZeroWidthSpace;type | Rest K8s service type | `"ClusterIP"` |
 | apis.&ZeroWidthSpace;rest.&ZeroWidthSpace;tolerations | Set tolerations, overrides global | `[]` |
 | base.&ZeroWidthSpace;cache_poll_period | Cache timeout for core agent & diskpool deployment | `"30s"` |
+| base.&ZeroWidthSpace;cert-manager.&ZeroWidthSpace;enabled | Enable cert-manager only if tls is enabled | `false` |
 | base.&ZeroWidthSpace;default_req_timeout | Request timeout for rest & core agents | `"5s"` |
 | base.&ZeroWidthSpace;logging.&ZeroWidthSpace;color | Enable ansi color code for Pod StdOut/StdErr | `true` |
 | base.&ZeroWidthSpace;logging.&ZeroWidthSpace;format | Valid values for format are pretty, json and compact | `"pretty"` |
