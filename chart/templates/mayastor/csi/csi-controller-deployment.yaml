@@ -125,7 +125,7 @@ spec:
             - "--ansi-colors={{ .Values.base.logging.color }}"
             - "--fmt-style={{ include "logFormat" . }}"
             - "--create-volume-limit={{ .Values.csi.controller.maxCreateVolume }}"
-            {{- if .Values.base.tls.enabled }}
+            {{- if .Values.tls.enabled }}
             - "--rest-endpoint=https://{{ .Release.Name }}-api-rest:8080"
             - "--tls-client-ca-path=/etc/client_cert/ca.crt" # CA cert for client verification with rest
             {{- else }}
@@ -141,7 +141,7 @@ spec:
           volumeMounts:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
-            {{- if .Values.base.tls.enabled }}
+            {{- if .Values.tls.enabled }}
             - name: ca-cert
               mountPath: /etc/client_cert/ca.crt
               subPath: ca.crt
@@ -150,7 +150,7 @@ spec:
       volumes:
         - name: socket-dir
           emptyDir:
-        {{- if .Values.base.tls.enabled }}
+        {{- if .Values.tls.enabled }}
         - name: ca-cert
           secret:
             defaultMode: 420

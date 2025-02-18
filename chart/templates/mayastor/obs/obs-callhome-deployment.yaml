@@ -43,10 +43,10 @@ spec:
             - "--send-report"
             {{ end }}
             {{- if .Values.tls.enabled }}
-            - "--e=https://{{ .Release.Name }}-api-rest:8080"
+            - "--endpoint=https://{{ .Release.Name }}-api-rest:8080"
             - "--tls-client-ca-path=/etc/client_cert/ca.crt" # CA cert for client verification with rest
             {{- else }}
-            - "--e=http://{{ .Release.Name }}-api-rest:8081"
+            - "--endpoint=http://{{ .Release.Name }}-api-rest:8081"
             {{- end }}
           env:
             - name: RUST_LOG
@@ -55,13 +55,13 @@ spec:
             - name: CALLHOME_PRODUCT_NAME
               value: {{ .Values.obs.callhome.productName | quote }}
           {{- end }}
+          {{- if .Values.tls.enabled }}
           volumeMounts:
-            {{- if .Values.tls.enabled }}
             - name: ca-cert
               mountPath: /etc/client_cert/ca.crt
               subPath: ca.crt
               readOnly: true
-            {{- end }}
+          {{- end }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           resources:
             limits:
