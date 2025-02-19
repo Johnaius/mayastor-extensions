@@ -1,0 +1,27 @@
+{{ if .Values.tls.enabled}}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: root-ca
+  namespace: {{ .Release.Namespace }}
+spec:
+  isCA: true
+  duration: 175200h #20 years
+  commonName: root-ca
+  secretName: ca-root-cert
+  issuerRef:
+    name: selfsigned-issuer
+    kind: Issuer
+    group: cert-manager.io
+---
+# use this issuer to create other certs
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: ca-issuer
+  namespace: {{ .Release.Namespace }}
+spec:
+  ca:
+    secretName: ca-root-cert
+
+{{ end }}
