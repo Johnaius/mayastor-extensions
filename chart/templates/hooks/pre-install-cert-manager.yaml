@@ -1,0 +1,94 @@
+{{- if .Values.tls.enabled }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cert-manager-job-sa
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-10"  # Lower weight to ensure this runs first
+    "helm.sh/hook-delete-policy": hook-succeeded,hook-failed
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cert-manager-installer-role
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-10"
+    "helm.sh/hook-delete-policy": hook-succeeded,hook-failed
+rules:
+  - apiGroups: ["*"]
+    resources: ["*"]
+    verbs: ["*"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cert-manager-installer-rolebinding
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-10"
+    "helm.sh/hook-delete-policy": hook-succeeded,hook-failed
+subjects:
+  - kind: ServiceAccount
+    name: cert-manager-job-sa
+    namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: cert-manager-installer-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cert-manager-preinstall
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-10"
+    "helm.sh/hook-delete-policy": hook-succeeded,hook-failed
+spec:
+  backoffLimit: 1
+  template:
+    spec:
+      serviceAccountName: cert-manager-job-sa
+      containers:
+      - name: install-cert-manager
+        image: alpine/k8s:1.24.13
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          echo "Installing cert-manager..."
+          helm repo add jetstack https://charts.jetstack.io
+          helm repo update
+
+          echo "Installing cert-manager with CRDs..."
+          helm upgrade --install \
+            cert-manager jetstack/cert-manager \
+            --namespace cert-manager \
+            --create-namespace \
+            --version v1.14.3 \
+            --set installCRDs=true \
+            --wait \
+            --timeout 5m \
+            --atomic
+
+          echo "Waiting for cert-manager webhook..."
+          until kubectl get pods -n cert-manager -l app.kubernetes.io/name=webhook -o jsonpath='{.items[*].status.conditions[?(@.type=="Ready")].status}' | grep -q "True"; do
+            echo "Waiting for webhook to be ready..."
+            sleep 5
+          done
+
+          echo "Verifying cert-manager deployments..."
+          kubectl wait --for=condition=Available deployment/cert-manager -n cert-manager --timeout=180s
+          kubectl wait --for=condition=Available deployment/cert-manager-webhook -n cert-manager --timeout=180s
+          kubectl wait --for=condition=Available deployment/cert-manager-cainjector -n cert-manager --timeout=180s
+
+          echo "Verifying CRDs..."
+          kubectl wait --for=condition=Established crd/certificates.cert-manager.io --timeout=60s
+          kubectl wait --for=condition=Established crd/issuers.cert-manager.io --timeout=60s
+          sleep 120
+          echo "cert-manager installation complete"
+      restartPolicy: Never
+{{- end }}

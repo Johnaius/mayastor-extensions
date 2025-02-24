@@ -1,9 +1,27 @@
 {{ if .Values.tls.enabled}}
+# Create the self-signed issuer first
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: selfsigned-issuer
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "0"  # Run first
+    "helm.sh/hook-delete-policy": hook-succeeded,hook-failed
+spec:
+  selfSigned: {}
+---
+# Create the root CA certificate second
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: root-ca
   namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "1"  # Run after selfsigned-issuer
+    "helm.sh/hook-delete-policy": hook-succeeded,hook-failed
 spec:
   isCA: true
   duration: 175200h #20 years
@@ -14,14 +32,17 @@ spec:
     kind: Issuer
     group: cert-manager.io
 ---
-# use this issuer to create other certs
+# Create the CA issuer last
 apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
   name: ca-issuer
   namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "2"  # Run after root-ca Certificate
+    "helm.sh/hook-delete-policy": hook-succeeded,hook-failed
 spec:
   ca:
     secretName: ca-root-cert
-
 {{ end }}

@@ -4,6 +4,10 @@ kind: Certificate
 metadata:
   name: rest-api-server
   namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "3"  # Run after the root-ca Certificate
+    "helm.sh/hook-delete-policy": hook-succeeded,hook-failed
 spec:
   duration: 175200h
   isCA: false
@@ -14,5 +18,6 @@ spec:
   issuerRef:
     name: ca-issuer
     kind: Issuer
+    group: cert-manager.io
   secretName: api-rest-tls
 {{- end }}

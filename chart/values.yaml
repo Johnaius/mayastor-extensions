@@ -60,12 +60,6 @@ tolerations: []
 tls:
     enabled: true
 
-cert-manager:
-  # -- Enable cert-manager only if tls is enabled
-  enabled: true
-  installCRDs: true
-  namespace: openebs
-
 base:
   # -- Request timeout for rest & core agents
   default_req_timeout: 5s
